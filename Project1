@@ -1,0 +1,137 @@
+from tkinter import *
+import requests
+from bs4 import BeautifulSoup
+import time
+
+
+
+def StockInfo(company):
+    urlList={'Nvidia':'https://www.investing.com/equities/nvidia-corp',
+             'Google':'https://www.investing.com/equities/google-inc',
+             'Microsoft':'https://www.investing.com/equities/microsoft-corp',
+             'Apple':'https://www.investing.com/equities/apple-computer-inc',
+             'Tesla':'https://www.investing.com/equities/tesla-motors',
+             'Tata Motors':'https://www.investing.com/equities/tata-motors-ltd',
+             'Adani Enterprises':'https://www.investing.com/equities/adani-enterprises',
+             'TCS':'https://www.investing.com/equities/tata-consultancy-services',
+             'Dominos':'https://www.investing.com/equities/dominos-pizza-inc',
+             'AMD':'https://www.investing.com/equities/adv-micro-device'}
+    
+    url=urlList[company]
+
+    htmlcontent=requests.get(url).text
+
+    soup = BeautifulSoup(htmlcontent, 'html5lib')
+
+    Info1=soup.find('div', class_='mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 md:mb-0.5 md:gap-6')
+    change=Info1.find_all('span')
+
+    price=Info1.find('div', class_='text-5xl/9 font-bold text-[#232526] md:text-[42px] md:leading-[60px]').text
+    diff=change[0].text
+    changepercent=change[1].text[1:-1]
+
+    Info2=soup.find('div', class_='flex flex-wrap items-center justify-between border-t border-t-[#e6e9eb] pt-2.5 sm:pb-2.5 pb-2.5')
+
+    prevcloseval=Info2.dd.span.contents[1].text
+
+    return ([price,prevcloseval,diff,changepercent])
+
+
+
+
+
+
+def button_clicked():
+    print("I was clicked!")
+
+    stock=StockInfo(var1.get())
+
+    tprice=Label(fprice,text='Current Price',padx=50,pady=8,font=('',10,'bold')).grid(row=0,column=0)
+    lprice=Label(fprice,text=f'{stock[0]}').grid(row=2,column=0)
+
+    tprev=Label(fprev,text='Previous Closing Price',padx=15,pady=8,font=('',10,'bold')).grid(row=0,column=0)
+    lprev=Label(fprev,text=f'{stock[1]}').grid(row=2,column=0)
+
+    if(stock[2][0]=='+'):
+
+        tdiff=Label(fdiff,text='Price Difference',padx=35,pady=8,font=('',10,'bold')).grid(row=0,column=0)
+        ldiff=Label(fdiff,text=stock[2],fg='Green').grid(row=2,column=0)
+
+        tpercent=Label(fpercent,text='Price Difference Percent',padx=10,pady=8,font=('',10,'bold')).grid(row=0,column=0)
+        lpercent=Label(fpercent,text=stock[3],fg='Green').grid(row=2,column=0)
+
+    else:
+
+        tdiff=Label(fdiff,text='Price Difference',padx=35,pady=8,font=('',10,'bold')).grid(row=0,column=0)
+        ldiff=Label(fdiff,text=stock[2],fg='Red').grid(row=2,column=0)
+
+        tpercent=Label(fpercent,text='Price Difference Percent',padx=10,pady=8,font=('',10,'bold')).grid(row=0,column=0)
+        lpercent=Label(fpercent,text=stock[3],fg='Red').grid(row=2,column=0)
+        
+
+
+
+    
+
+root=Tk() #creates window
+
+root.title("My Project")
+root.geometry('700x480') #width x height
+root.configure(bg='#a3b18a')
+
+comp_name=[
+    'Google',
+    'Microsoft',
+    'Nvidia',
+    'Apple',
+    'Tata Motors',
+]
+
+
+#title
+
+title=Label(root,text='Stock Data',font='Roboto 20',fg='white',bg='#a3b18a',relief='groove',borderwidth=2).grid(row=0,column=3)
+
+#Dropdown Menu
+
+var1=StringVar(root)
+var1.set('Google')
+
+menu=OptionMenu(root,var1,*comp_name)
+menu.grid(row=2, column=1, rowspan=1, columnspan=2)
+
+b1= Button(root,text='Get Prices', command=button_clicked).grid(row=2,column=4)
+
+#Frames
+
+fprice=Frame(root, width=200, height=75,borderwidth=5, relief=GROOVE)
+fprice.grid_propagate(False)
+fprice.grid(row=4,column=2)
+
+fprev=Frame(root,width=200, height=75, borderwidth=5, relief=GROOVE)
+fprev.grid_propagate(False)
+fprev.grid(row=4,column=4)
+
+fdiff=Frame(root,width=200, height=75, borderwidth=5, relief=GROOVE)
+fdiff.grid_propagate(False)
+fdiff.grid(row=6,column=2)
+
+fpercent=Frame(root,width=200, height=75, borderwidth=5, relief=GROOVE)
+fpercent.grid_propagate(False)
+fpercent.grid(row=6,column=4)
+
+filler0=Frame(root,width=50, height=30,bg='#a3b18a').grid(row=1,column=0,columnspan=6)
+filler1=Frame(root,width=50, height=30,bg='#a3b18a').grid(row=3,column=0,columnspan=6)
+filler2=Frame(root,width=50, height=30,bg='#a3b18a').grid(row=5,column=0,columnspan=6)
+
+filler3=Frame(root,width=50, height=30,bg='#a3b18a').grid(row=4,column=3)
+filler4=Frame(root,width=50, height=30,bg='#a3b18a').grid(row=4,column=0)
+
+
+#updating data
+
+root.after(500, button_clicked)
+
+
+
+root.mainloop() 
